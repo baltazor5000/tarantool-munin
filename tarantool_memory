@@ -1,0 +1,54 @@
+#!/usr/bin/php
+
+<?php
+
+$host = !empty(getenv('HOST')) ? getenv('HOST') : "127.0.0.1";
+$port = !empty(getenv('PORT')) ? getenv('PORT') : "3301";
+
+if(!class_exists('Tarantool'))
+{
+    die('Tarantool extension not install.\n');
+}
+
+if(count($argv) == 2 && $argv[1] == 'authconf')
+{
+    exit('yes');
+}
+
+if(count($argv) == 2 && $argv[1] == 'config')
+{
+    echo("graph_title Memory Tarantool\n");
+    echo("graph_vlabel Memory used\n");
+    echo("graph_category tarantool\n");
+    echo("graph_args --base 1024 --lower-limit 0\n");
+    echo("graph_order limit system tuple total\n");
+
+    echo("limit.label Limit memory\n");
+    echo("limit.min 0\n");
+    echo("limit.draw AREA\n");
+
+    echo("tuple.label Tuple used memory\n");
+    echo("tuple.min 0\n");
+    echo("tuple.draw STACK\n");
+
+    echo("system.label System used memory\n");
+    echo("system.min 0\n");
+    echo("system.draw AREA\n");
+
+    echo("total.label Current used memory \n");
+    echo("total.min 0\n");
+    echo("total.draw STACK\n");
+    exit();
+}
+
+$tnt = new Tarantool($host.":".$port);
+$tnt->connect();
+$stats = $tnt->call('box.slab.info')[0][0];
+
+echo("limit.value " . $stats['quota_size']. "\n");
+echo("tuple.value " . $stats['arena_used'] . "\n");
+echo("system.value " . ($stats['quota_used'] - $stats['arena_used']) . "\n");
+echo("total.value " . $stats['quota_used'] . "\n");
+
+
+

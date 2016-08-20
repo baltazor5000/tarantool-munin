@@ -1,0 +1,82 @@
+#!/usr/bin/php
+
+<?php
+
+$host = !empty(getenv('HOST')) ? getenv('HOST') : "127.0.0.1";
+$port = !empty(getenv('PORT')) ? getenv('PORT') : "3301";
+
+if(!class_exists('Tarantool'))
+{
+    die('Tarantool extension not install.\n');
+}
+
+if(count($argv) == 2 && $argv[1] == 'authconf')
+{
+    exit('yes');
+}
+
+if(count($argv) == 2 && $argv[1] == 'config')
+{
+    echo("graph_title Commands Tarantool\n");
+    echo("graph_vlabel Commands per second\n");
+    echo("graph_category tarantool\n");
+    echo("graph_args --base 1000 --lower-limit 0 \n");
+
+    echo("select.label Select\n");
+    echo("select.type DERIVE\n");
+    echo("select.min 0\n");
+
+    echo("insert.label Insert\n");
+    echo("insert.type DERIVE\n");
+    echo("insert.min 0\n");
+
+    echo("update.label Update\n");
+    echo("update.type DERIVE\n");
+    echo("update.min 0\n");
+
+    echo("upsert.label Upsert\n");
+    echo("upsert.type DERIVE\n");
+    echo("upsert.min 0\n");
+
+    echo("replace.label Replace\n");
+    echo("replace.type DERIVE\n");
+    echo("replace.min 0\n");
+
+    echo("delete.label Delete\n");
+    echo("delete.type DERIVE\n");
+    echo("delete.min 0\n");
+
+    echo("eval.label Eval\n");
+    echo("eval.type DERIVE\n");
+    echo("eval.min 0\n");
+
+    echo("call.label Call\n");
+    echo("call.type DERIVE\n");
+    echo("call.min 0\n");
+
+    echo("auth.label Auth\n");
+    echo("auth.type DERIVE\n");
+    echo("auth.min 0\n");
+
+    echo("error.label Error\n");
+    echo("error.type DERIVE\n");
+    echo("error.min 0\n");
+    exit();
+}
+
+$tnt = new Tarantool($host.":".$port);
+$tnt->connect();
+$stats = $tnt->call('box.stat')[0][0];
+
+echo("select.value " . $stats['SELECT']['total'] . "\n");
+echo("insert.value " . $stats['INSERT']['total'] . "\n");
+echo("update.value " . $stats['UPDATE']['total'] . "\n");
+echo("upsert.value " . $stats['UPSERT']['total'] . "\n");
+echo("replace.value " . $stats['REPLACE']['total'] . "\n");
+echo("delete.value " . $stats['DELETE']['total'] . "\n");
+echo("eval.value " . $stats['EVAL']['total'] . "\n");
+echo("call.value " . $stats['CALL']['total'] . "\n");
+echo("auth.value " . $stats['AUTH']['total'] . "\n");
+echo("error.value " . $stats['ERROR']['total'] . "\n");
+
+
